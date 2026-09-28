@@ -1,0 +1,35 @@
+# Renews the copy of the recall data in seed/ once a day. On a host with no long-running process (Vercel)
+# this is how fresh recalls arrive: the commit triggers a deploy.
+name: data
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: data
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # a source that fails keeps its rows from the copy already in seed/, and the job fails only if nothing came back
+      - run: npm run sync
+        env:
+          RECALL_DATA: seed/recalls.json.gz
+      - run: npm test
+      - name: Commit the new copy
+        run: |
+          if git diff --quiet -- seed/recalls.json.gz; then echo "no change"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add seed/recalls.json.gz
+          git commit -m "Recall data as of $(date -u +%F)"
+          git push

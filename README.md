@@ -136,7 +136,9 @@ src/
   service.ts   what Recall Check can do, independent of MCP
   speech.ts    every sentence Alexa says
   mcp.ts       the seven tools
-  server.ts    HTTP: /mcp, /health, and the simulator
+  app.ts       HTTP: /mcp, /oauth, /health, and the simulator
+  server.ts    runs the app as a process on a port
+  vercel.ts    runs the app as a serverless function
   auth.ts      who is calling
   oauth.ts     the authorization server: service tokens and account linking
   store.ts     households and accounts, in files or in Redis
@@ -146,7 +148,7 @@ seed/          a copy of the recall data, so a new host starts with a full index
 addon-package/ the add-on manifest, in the format Amazon's CLI produces, and listing images
 ```
 
-Recall data is refreshed every six hours. If one agency is down, its rows are carried over from the previous snapshot, so an outage never empties the index.
+Recall data is refreshed every six hours by the server, or once a day by a GitHub workflow where there is no process to keep a timer (Vercel). If one agency is down, its rows are carried over from the previous snapshot, so an outage never empties the index.
 
 ## Limits
 

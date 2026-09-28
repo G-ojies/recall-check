@@ -7,6 +7,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { understand, type Memory } from './parse.ts';
 import { llmFromEnv, runLlmTurn, type ChatMessage, type LlmConfig } from './llm.ts';
+import type { KV } from '../store.ts';
 
 export interface TraceStep { tool: string; args: Record<string, unknown>; ms: number; ok: boolean }
 export interface Card { kind: 'recall' | 'items' | 'note'; title: string; text?: string; url?: string; agency?: string; date?: string; urgent?: boolean; confidence?: string; item?: string; remedy?: string; items?: string[] }
@@ -14,24 +15,39 @@ export interface Turn { speech: string; cards: Card[]; trace: TraceStep[]; brain
 
 interface Session { memory: Memory; history: ChatMessage[]; touched: number }
 
+const SESSION_TTL = 3600;
+
 type Data = Record<string, any>;
 
 export class Host {
   private sessions = new Map<string, Session>();
+  /**
+   * `kv` keeps each conversation's memory ("it", a question waiting for an answer) where every instance can
+   * read it. Without one it is kept in this process, which is enough for a single server.
+   */
   constructor(
     private mcpUrl: string, private tokenFor: (household: string) => string,
-    private knowsBrand: (words: string) => boolean, private llm: LlmConfig | null = llmFromEnv(),
+    private knowsBrand: (words: string) => boolean, private kv: KV | null = null, private llm: LlmConfig | null = llmFromEnv(),
   ) {}
 
   get brain(): 'rules' | 'model' { return this.llm ? 'model' : 'rules'; }
 
-  private session(id: string): Session {
+  private async session(id: string): Promise<Session> {
     const now = Date.now();
-    if (this.sessions.size > 5000) for (const [k, s] of this.sessions) if (now - s.touched > 3600_000) this.sessions.delete(k);
+    if (this.kv) {
+      const raw = await this.kv.read(`sim:session:${id}`).catch(() => null);
+      const kept = raw ? (JSON.parse(raw) as Session) : null;
+      return kept ? { ...kept, touched: now } : { memory: {}, history: [], touched: now };
+    }
+    if (this.sessions.size > 5000) for (const [k, s] of this.sessions) if (now - s.touched > SESSION_TTL * 1000) this.sessions.delete(k);
     let s = this.sessions.get(id);
     if (!s) { s = { memory: {}, history: [], touched: now }; this.sessions.set(id, s); }
     s.touched = now;
     return s;
+  }
+
+  private async keep(id: string, s: Session): Promise<void> {
+    if (this.kv) await this.kv.write(`sim:session:${id}`, JSON.stringify({ ...s, history: s.history.slice(-12) }), SESSION_TTL).catch((e) => console.error('[host] session not saved', e));
   }
 
   private async connect(household: string, bearer?: string): Promise<Client> {
@@ -43,7 +59,7 @@ export class Host {
   /** `bearer` is the access token of a linked account; without one the browser's own household is used. */
   async turn(household: string, utterance: string, bearer?: string): Promise<Turn> {
     const t0 = performance.now();
-    const s = this.session(household);
+    const s = await this.session(household);
     const trace: TraceStep[] = [], cards: Card[] = [];
     const client = await this.connect(household, bearer);
     const call = async (tool: string, args: Record<string, unknown>) => {
@@ -68,6 +84,7 @@ export class Host {
           speech = await this.byRules(s, utterance, call);
         }
       } else speech = await this.byRules(s, utterance, call);
+      await this.keep(household, s);
       return { speech, cards: dedupe(cards).slice(0, 5), trace, brain, totalMs: Math.round(performance.now() - t0) };
     } finally { await client.close().catch(() => {}); }
   }
@@ -88,7 +105,7 @@ export class Host {
     if (tool === 'remove_item') { mem.pendingRemove = data.needsConfirmation?.id; if (data.removed && mem.lastItem === data.removed.id) mem.lastItem = undefined; }
   }
 
-  reset(household: string) { this.sessions.delete(household); }
+  async reset(household: string) { this.sessions.delete(household); await this.kv?.remove(`sim:session:${household}`).catch(() => {}); }
 }
 
 function cardsFrom(tool: string, d: Data): Card[] {
