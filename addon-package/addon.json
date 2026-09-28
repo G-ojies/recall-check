@@ -1,0 +1,27 @@
+{
+  "manifestVersion": "1.0",
+  "storeListing": {
+    "distributionCountries": ["US"],
+    "locales": {
+      "en-US": {
+        "default": true,
+        "name": { "value": "Recall Check" },
+        "shortDescription": "Tell Alexa what you own. Hear about it when any of it is recalled, and what to do.",
+        "fullDescription": "Recall Check watches the things in your home for United States safety recalls. Tell Alexa what you own: a stroller, an air fryer, your car, a medicine. Recall Check compares it with recalls from the Consumer Product Safety Commission, the National Highway Traffic Safety Administration and the Food and Drug Administration, and tells you when something you own is affected.\n\nGive a model number and Recall Check can confirm the match. Without one, it tells you a recall probably applies and asks you to compare the label. Ask what to do and you hear the remedy: a refund, a repair or a replacement, and whether to stop using the item now. When you have dealt with a recall, say so and it will not be mentioned again.\n\nRecall Check is not affiliated with any government agency. Always confirm a recall on the official notice, which is sent to your Alexa app.",
+        "examplePhrases": [
+          "Alexa, add my Graco stroller to Recall Check",
+          "Alexa, is anything I own recalled?",
+          "Alexa, what should I do about the air fryer?",
+          "Alexa, I drive a 2020 Honda Civic"
+        ],
+        "privacyAndCompliance": {
+          "privacyPolicyUrl": "https://example.com/recall-check/privacy",
+          "termsOfUseUrl": "https://example.com/recall-check/terms"
+        }
+      }
+    }
+  },
+  "integrations": [
+    { "type": "MCP", "config": { "endpoints": { "default": { "type": "HTTPS", "uri": "https://example.com/mcp" } } } }
+  ]
+}

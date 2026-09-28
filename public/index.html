@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recall Check for Alexa+</title>
+  <meta name="description" content="Tell Alexa what you own. Recall Check tells you when any of it is recalled.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1220'/%3E%3Cpath d='M16 5l9 4v7c0 5.5-3.8 9.6-9 11-5.200-1.400-9-5.500-9-11V9z' fill='none' stroke='%2300caff' stroke-width='2.200' stroke-linejoin='round'/%3E%3Cpath d='M11.500 16.200l3.200 3.200 5.800-6.200' fill='none' stroke='%2300caff' stroke-width='2.400' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><path d="M16 4l10 4.400v7.800c0 6-4.200 10.600-10 12.200-5.800-1.600-10-6.200-10-12.200V8.400z" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linejoin="round"/><path d="M11 16.400l3.600 3.600 6.400-7" fill="none" stroke="currentColor" stroke-width="2.400" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div>
+        <h1>Recall Check</h1>
+        <p>Tell Alexa what you own. Hear about it when it is recalled.</p>
+      </div>
+    </div>
+    <p class="status" id="status" aria-live="polite">Connecting</p>
+  </header>
+
+  <main class="stage">
+    <section class="device-wrap" aria-label="Simulated Alexa+ device">
+      <div class="device">
+        <div class="screen" id="screen">
+          <div class="home" id="home">
+            <p class="clock" id="clock"></p>
+            <p class="hint">Try saying</p>
+            <p class="hint-line" id="hintLine">“Alexa, add my Cosori air fryer”</p>
+          </div>
+          <div class="talk" id="talk" hidden>
+            <p class="heard" id="heard"></p>
+            <p class="said" id="said" aria-live="polite"></p>
+            <div class="cards" id="cards"></div>
+          </div>
+        </div>
+        <div class="lightbar" id="lightbar" data-state="idle" aria-hidden="true"></div>
+      </div>
+      <p class="sim-note">Simulated Alexa+ experience. The add-on behind it is real: every answer comes from a live MCP call.</p>
+
+      <form class="ask" id="ask" autocomplete="off">
+        <button type="button" class="mic" id="mic" aria-label="Speak" title="Speak">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.500 11a6.500 6.500 0 0013 0M12 17.500V21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <label class="sr" for="text">Say something to Alexa</label>
+        <input id="text" name="text" type="text" maxlength="300" placeholder="Type what you would say to Alexa" enterkeyhint="send">
+        <button type="submit" class="send" id="send">Ask</button>
+      </form>
+
+      <div class="chips" id="chips" aria-label="Things to try"></div>
+
+      <div class="tools-row">
+        <label class="toggle"><input type="checkbox" id="voice" checked> <span>Speak answers aloud</span></label>
+        <button type="button" class="link" id="reset">Start over with an empty list</button>
+      </div>
+    </section>
+
+    <aside class="trace" aria-label="What happened behind the answer">
+      <h2>Behind the answer</h2>
+      <p class="trace-lead">Each line is one MCP tool call from the assistant to the Recall Check server. Alexa+ requires a reply in under 500 ms.</p>
+      <div class="meter" id="meter" hidden>
+        <div class="meter-row"><span>Slowest call this turn</span><strong id="meterMs"></strong></div>
+        <div class="meter-track"><div class="meter-fill" id="meterFill"></div><div class="meter-limit" title="500 ms limit"></div></div>
+        <div class="meter-scale"><span>0</span><span>500 ms limit</span></div>
+      </div>
+      <ol class="steps" id="steps"></ol>
+      <p class="empty" id="traceEmpty">Ask something and the tool calls appear here.</p>
+      <dl class="facts" id="facts"></dl>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    <p>Recall data comes from the US Consumer Product Safety Commission, the National Highway Traffic Safety Administration and the Food and Drug Administration. Recall Check is not affiliated with them or with Amazon. Always confirm a recall on the official notice.</p>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

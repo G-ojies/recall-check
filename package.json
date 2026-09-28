@@ -1,0 +1,27 @@
+{
+  "name": "recall-check",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tell Alexa what you own. Recall Check tells you when any of it is recalled.",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "sync": "tsx scripts/sync.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.1",
+    "express": "^4.21.2",
+    "tsx": "^4.19.1",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.0",
+    "typescript": "^5.6.2"
+  }
+}
