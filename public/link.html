@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Link your account · Recall Check</title>
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="doc">
+    <p><a href="./">Back to the simulator</a></p>
+    <h1>Link your account</h1>
+    <p class="lead">This page plays the part of the Alexa app. It runs the same account linking flow Alexa+ uses: an OAuth 2.1 authorization code grant with PKCE.</p>
+    <p id="state" class="note" aria-live="polite">Checking</p>
+    <p><button type="button" class="send big" id="go" hidden>Link Recall Check</button> <button type="button" class="link" id="unlink" hidden>Unlink this browser</button></p>
+    <ol class="flow" id="flow"></ol>
+  </main>
+  <script src="link.js" defer></script>
+</body>
+</html>

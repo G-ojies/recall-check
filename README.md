@@ -63,8 +63,25 @@ Vehicle recalls apply to "certain" vehicles of a make, model and year, so they a
 | Errors as `isError` with something sayable | Every failure returns one sentence Alexa can say. No error codes reach the user. |
 | Tool descriptions say when to call, and output matches a declared schema | Each tool declares an `outputSchema`; the SDK validates every result against it. |
 | State across sessions | The household list, what has been reported and what has been dealt with persist per user. |
+| Service-level authentication (client credentials) | `POST /oauth/token` issues a one-hour `mcp:service` token with no refresh token. With it Alexa+ can initialize, list tools and search recalls. |
+| Account linking (OAuth 2.1, PKCE S256) | Authorization code grant, a refresh token with every access token, static clients, the `resource` parameter checked. Tools that work on a household return 401 until an account is linked, which is what makes Alexa+ start linking. |
 
-Account linking (OAuth 2.1 with PKCE) is the next step for a real listing. See [docs/ALEXA-READINESS.md](docs/ALEXA-READINESS.md).
+What remains for a real listing is in [docs/ALEXA-READINESS.md](docs/ALEXA-READINESS.md).
+
+## Account linking
+
+Recall Check is its own authorization server, so it needs no outside identity service. An account is an email address and a password (stored as a salted scrypt hash). It owns one household, and the household is the subject of every token, so a list built by voice in the kitchen is there on the phone.
+
+| Address | What it is |
+| --- | --- |
+| `/.well-known/oauth-protected-resource` | Tells Alexa+ which authorization server to use (RFC 9728) |
+| `/.well-known/oauth-authorization-server` | Endpoints, grants and the PKCE method (RFC 8414) |
+| `/oauth/authorize` | The sign-in page the customer sees |
+| `/oauth/token` | Codes and refresh tokens are exchanged here |
+
+To see it work, open the simulator and choose **Link an account**. That page plays the part of the Alexa app: it runs the PKCE flow in the browser and shows each step. Link a second browser to the same account and the list is already there.
+
+![The sign-in page a customer sees when linking Recall Check](docs/screens/account-linking.png)
 
 ## The simulated Alexa+ experience
 
@@ -76,13 +93,17 @@ The host understands utterances with built-in rules, so it runs with no API key.
 
 ## Run it
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/G-ojies/recall-check)
+
+Or on your own machine. 
 Requires Node.js 20 or newer.
 
 ```bash
 npm install
-npm run sync     # downloads recall data (about 7,000 recalls, 10 to 30 seconds)
 npm start        # http://localhost:8787
 ```
+
+The repository carries a copy of the recall data in `seed/`, so the server answers from its first request. It fetches fresh data in the background when the copy is more than six hours old. `npm run sync` does the same by hand.
 
 Open http://localhost:8787 for the simulator. The MCP endpoint is `POST http://localhost:8787/mcp`.
 
@@ -101,7 +122,7 @@ Configuration is in [.env.example](.env.example).
 npm test
 ```
 
-62 tests, no network and no keys needed. They cover matching (including that a brand alone, or a brand mentioned only in a description, never produces a match), the three agency adapters against real record shapes, the household service, what is spoken, the tools called through a real MCP client, and the simulator's understanding of utterances.
+79 tests, no network and no keys needed. They cover matching (including that a brand alone, or a brand mentioned only in a description, never produces a match), the three agency adapters against real record shapes, the household service, what is spoken, the tools called through a real MCP client, the simulator's understanding of utterances, storage, and authentication: codes that work once, PKCE, forged and expired tokens, refresh token rotation, and what a service token may not do.
 
 ## How it is built
 
@@ -115,10 +136,12 @@ src/
   mcp.ts       the seven tools
   server.ts    HTTP: /mcp, /health, and the simulator
   auth.ts      who is calling
-  store.ts     one file per household
+  oauth.ts     the authorization server: service tokens and account linking
+  store.ts     households and accounts, in files or in Redis
   host/        the simulated assistant: utterance rules, optional model, MCP client
-public/        the simulated device
-addon-package/ the add-on manifest, in the format Amazon's CLI produces
+public/        the simulated device, the account linking page, privacy and terms
+seed/          a copy of the recall data, so a new host starts with a full index
+addon-package/ the add-on manifest, in the format Amazon's CLI produces, and listing images
 ```
 
 Recall data is refreshed every six hours. If one agency is down, its rows are carried over from the previous snapshot, so an outage never empties the index.

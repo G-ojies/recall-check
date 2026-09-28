@@ -16,13 +16,17 @@ The Alexa+ MCP Toolkit is in preview with select partners, so this add-on could 
 | Both `content` and `structuredContent` returned | mcp-addon-tools-schema-data-design | Done. |
 | Every listed tool works | functional-requirements | Done. Seven tools, all covered by tests. |
 | Add-on manifest | alexa-ai-cli-reference | Drafted in `addon-package/addon.json`. Name 12 of 30 characters, short description 82 of 123. |
+| Service-level authentication | mcp-toolkit-authentication | Done. Client credentials grant, HTTP Basic or body credentials, `resource` checked, `mcp:service` only, one hour, no refresh token. A service token can initialize, list tools and search recalls. |
+| Account linking | mcp-toolkit-account-linking | Done. Authorization code grant with PKCE (S256 only), a refresh token with every access token, static clients, any number of registered redirect addresses, `resource` checked. Metadata at `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`. Household tools return 401 until an account is linked. |
+| Privacy policy and terms of use | mcp-toolkit-account-linking | Done. Served at `/privacy` and `/terms`. |
+| Storage shared between instances | | Done. Redis over REST when `KV_REST_API_URL` and `KV_REST_API_TOKEN` are set, files otherwise. |
 
 ## Remaining
 
 | Item | What it needs |
 | --- | --- |
-| Account linking | OAuth 2.1 authorization code flow with PKCE (S256), a static client, refresh tokens with every access token, protected resource metadata at `/.well-known/oauth-protected-resource`, and a 401 without a `WWW-Authenticate` header. The household id then comes from the token's subject. Today `src/auth.ts` accepts configured bearer tokens. |
-| Public host | An always-on HTTPS host. A host that sleeps when idle would break the 500 ms limit on the first request. |
-| Household storage | One file per household works on a single instance. More than one instance needs shared storage; `Store` in `src/store.ts` is the interface to implement. |
-| Store listing assets | Icons in six sizes, at least one 600 by 900 carousel image, privacy policy and terms of use pages. The manifest holds placeholder addresses for the last two. |
+| Registering with Alexa+ | The client id, the client secret and Amazon's list of redirect addresses come from `alexa-ai configure-account-linking`, which needs partner access. They go in `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET` and `OAUTH_REDIRECT_URIS`. |
+| An always-on host | The demonstration runs on a free host that sleeps when idle, so its first request after a pause is slow. A listing needs a host that stays awake. |
+| Account recovery | Accounts are an email address and a password. There is no password reset or email verification yet. Login with Amazon would remove the need for both. |
+| Store listing assets | Icons and a carousel image are in `addon-package/assets/`. The sizes Amazon requires are in the Developer Hub, which needs partner access, so these are unverified. |
 | Proactive alerts | Alexa+ add-ons answer when asked. Telling the owner about a new recall without being asked needs a notification channel Amazon has not documented for add-ons. |

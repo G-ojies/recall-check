@@ -1,13 +1,15 @@
 /**
  * Who is calling. Two modes, chosen by AUTH_MODE:
- *   token (default): a bearer token listed in ACCESS_TOKENS as "token:userId,token:userId".
- *   open: no token needed, every caller is the household named by DEMO_USER. For local work and the public demo only.
- * OAuth 2.1 account linking replaces `token` for the Alexa+ listing; see docs/ALEXA-ONBOARDING.md.
+ *   token (default): a bearer token. Either an access token issued by account linking (src/oauth.ts), a token
+ *     listed in ACCESS_TOKENS as "token:userId,token:userId", or one the simulator signed for a browser.
+ *   open: no token needed, every caller is the household named by DEMO_USER. For local work only.
  */
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { Request } from 'express';
+import { accessCaller } from './oauth.ts';
 
-export type Identity = { ok: true; userId: string } | { ok: false; challenge: string };
+/** `service` is Alexa+ itself, holding a client credentials token: it may look around but has no household. */
+export type Identity = { ok: true; userId: string; service?: true } | { ok: false; challenge: string };
 
 const same = (a: string, b: string) => { const x = Buffer.from(a), y = Buffer.from(b); return x.length === y.length && timingSafeEqual(x, y); };
 
@@ -27,12 +29,19 @@ function simUser(token: string, secret: string | undefined): string | null {
   return m && secret && same(token, simToken(m[1], secret)) ? `sim:${m[1]}` : null;
 }
 
+/** Points a client at the metadata that says where to get a token (RFC 9728). */
+export function challenge(env: NodeJS.ProcessEnv = process.env): string {
+  return `Bearer realm="recall-check"${env.PUBLIC_URL ? `, resource_metadata="${env.PUBLIC_URL}/.well-known/oauth-protected-resource"` : ''}`;
+}
+
 export function identify(req: Pick<Request, 'headers'>, env: NodeJS.ProcessEnv = process.env): Identity {
   if ((env.AUTH_MODE ?? 'token') === 'open') return { ok: true, userId: env.DEMO_USER ?? 'demo' };
   const header = req.headers.authorization ?? '';
   const token = /^Bearer\s+(.+)$/i.exec(header)?.[1]?.trim() ?? '';
-  let userId: string | null = simUser(token, env.SIM_SECRET);
+  const caller = accessCaller(token, env.OAUTH_SECRET);
+  if (caller?.service) return { ok: true, userId: caller.userId, service: true };
+  let userId: string | null = simUser(token, env.SIM_SECRET) ?? caller?.userId ?? null;
   // compare against every token so the time taken does not reveal which one matched
   for (const [t, u] of parseTokens(env.ACCESS_TOKENS ?? '')) if (token && same(token, t)) userId = u;
-  return userId ? { ok: true, userId } : { ok: false, challenge: 'Bearer realm="recall-check"' };
+  return userId ? { ok: true, userId } : { ok: false, challenge: challenge(env) };
 }

@@ -34,17 +34,18 @@ export class Host {
     return s;
   }
 
-  private async connect(household: string): Promise<Client> {
+  private async connect(household: string, bearer?: string): Promise<Client> {
     const client = new Client({ name: 'Alexa+ simulator', version: '1.0.0' });
-    await client.connect(new StreamableHTTPClientTransport(new URL(this.mcpUrl), { requestInit: { headers: { authorization: `Bearer ${this.tokenFor(household)}` } } }));
+    await client.connect(new StreamableHTTPClientTransport(new URL(this.mcpUrl), { requestInit: { headers: { authorization: `Bearer ${bearer ?? this.tokenFor(household)}` } } }));
     return client;
   }
 
-  async turn(household: string, utterance: string): Promise<Turn> {
+  /** `bearer` is the access token of a linked account; without one the browser's own household is used. */
+  async turn(household: string, utterance: string, bearer?: string): Promise<Turn> {
     const t0 = performance.now();
     const s = this.session(household);
     const trace: TraceStep[] = [], cards: Card[] = [];
-    const client = await this.connect(household);
+    const client = await this.connect(household, bearer);
     const call = async (tool: string, args: Record<string, unknown>) => {
       const c0 = performance.now();
       const r = await client.callTool({ name: tool, arguments: args });

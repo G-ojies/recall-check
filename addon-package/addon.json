@@ -21,6 +21,7 @@
       }
     }
   },
+  "accountLinking": { "enabled": true },
   "integrations": [
     { "type": "MCP", "config": { "endpoints": { "default": { "type": "HTTPS", "uri": "https://example.com/mcp" } } } }
   ]

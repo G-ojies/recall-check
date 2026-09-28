@@ -49,7 +49,7 @@ Building a self-hosted MCP add-on for Alexa+ from Amazon's public documentation,
 - **Expected:** the MCP authorization flow, in which a 401 carries a `WWW-Authenticate` header pointing to the resource metadata.
 - **Actual:** the page lists `WWW-Authenticate` headers, Dynamic Client Registration and OpenID Connect as not supported. A server built to the MCP specification sends that header; the page does not say whether sending it is harmless or an error.
 - **Severity:** Minor, because it is documented, but it is easy to miss in a list.
-- **Workaround:** none needed yet. Account linking is not implemented.
+- **Workaround:** the server sends the header, because other MCP clients follow it, and also returns the JSON body from Amazon's sample (`"error": "unauthorized"`).
 - **Suggestion:** add a short section titled "Differences from the MCP authorization specification", and say whether an unsupported header is ignored.
 
 ## 6. No guidance on limits for tools and payloads
@@ -71,6 +71,36 @@ Building a self-hosted MCP add-on for Alexa+ from Amazon's public documentation,
 - **Severity:** Minor.
 - **Workaround:** set the annotations, and enforced confirmation on the server so it does not depend on them.
 - **Suggestion:** document which annotations the client reads.
+
+## 8. The authentication page contradicts itself on which scope a service token carries
+
+- **Task:** implement the client credentials grant (service level).
+- **Steps:** read `mcp-toolkit-authentication.html`, 28 September 2026.
+- **Expected:** one answer to "which scope does a client credentials token carry?"
+- **Actual:** two. "Token endpoint requirements" says to "Restrict issued scopes to service-level only (`mcp:service`)". Step 5 of "Client credentials runtime flow" says the server "issues access token with `mcp:tools`, `mcp:resource`, or self-defined scope". That step also spells the scope `mcp:resource`, where the rest of the page has `mcp:resources`.
+- **Severity:** Major. A server built to step 5 hands user-level scopes to a caller with no user.
+- **Workaround:** followed the requirements section and the checklist: `mcp:service` only, and a test refuses anything else.
+- **Suggestion:** correct step 5 to `mcp:service`, and fix the spelling.
+
+## 9. OpenID Connect is unsupported, and the samples request the `openid` scope
+
+- **Task:** decide which scopes to list in the protected resource metadata.
+- **Steps:** compared the two pages. `mcp-toolkit-authentication.html` lists "OpenID Connect (OIDC)" under "What isn't supported" and shows `scopes_supported` as `mcp:tools`, `mcp:resources`. `mcp-toolkit-account-linking.html` shows `scopes_supported` as `openid`, `your-custom-scope`, and its sample authorization request carries `scope=openid%20your-scope`.
+- **Expected:** the same scopes on both pages, and no `openid` if OpenID Connect is not supported.
+- **Actual:** it is unclear whether Alexa+ will send `openid`, and whether a server should accept it.
+- **Severity:** Minor.
+- **Workaround:** the server offers `mcp:tools` and `mcp:resources`, and drops any scope it does not know instead of failing the request, so a request that includes `openid` still links.
+- **Suggestion:** use one set of scopes in every sample, and say what Alexa+ sends by default.
+
+## 10. Which tools a service token may call is left to the reader
+
+- **Task:** decide what to do when Alexa+ calls a tool with a service token.
+- **Steps:** read "Transition to user-level authentication" and step 1b of the account linking page.
+- **Expected:** a way to declare, per tool, whether it needs a linked account.
+- **Actual:** the pages say the switch to account linking happens "only when a user-specific tool is invoked" and that the server should return 401 or 403. Nothing in the manifest or the tool definition marks a tool as user-specific, so Alexa+ can only find out by calling it and being refused.
+- **Severity:** Minor. It works, at the cost of one failed call per customer.
+- **Workaround:** `search_recalls` answers with a service token. The six household tools return 401 until an account is linked.
+- **Suggestion:** a tool annotation or manifest field, for example `requiresAccountLinking`, so Alexa+ can start linking before the first call.
 
 # Feature requests
 

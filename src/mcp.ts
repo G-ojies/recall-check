@@ -13,6 +13,8 @@ import { RecallCheck, UserError, findItem } from './service.ts';
 import { sayCheck, sayDate, sayItem, sayItemFull, sayItemMatches, sayList, saySearch, sayWhatToDo } from './speech.ts';
 
 export const SERVER_INFO = { name: 'recall-check', title: 'Recall Check', version: '0.1.0' };
+/** Tools that need no household, so they answer before an account is linked. */
+export const PUBLIC_TOOLS: string[] = ['search_recalls'];
 
 const INSTRUCTIONS = [
   'Recall Check watches the things a household owns for United States safety recalls (consumer products, vehicles, food, medicine).',

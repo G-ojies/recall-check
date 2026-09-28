@@ -135,7 +135,21 @@ button, input { font: inherit; color: inherit; }
 .facts dt { color: var(--muted); }
 .facts dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 
+/* plain pages: account linking, privacy, terms */
+.doc { max-width: 680px; margin: 0 auto; padding: 32px 24px 48px; }
+.doc h1 { font-size: 1.75rem; letter-spacing: -0.02em; margin: 16px 0 8px; }
+.doc h2 { font-size: 1.0625rem; margin: 28px 0 6px; }
+.doc p, .doc li { margin: 0 0 12px; max-width: 65ch; }
+.doc .lead { color: var(--muted); }
+.doc .note { font-weight: 600; }
+.doc a, .foot a, a.link { color: var(--accent); text-underline-offset: 3px; }
+.send.big { padding: 12px 22px; }
+.flow { padding-left: 20px; color: var(--muted); }
+.flow li { margin-bottom: 8px; }
+.flow li.failed { color: var(--bad); }
+
 .foot { max-width: 1280px; margin: 0 auto; padding: 8px 24px 32px; font-size: 0.75rem; color: var(--muted); }
+.foot p + p { margin-top: 6px; }
 
 @media (max-width: 960px) {
   .stage { grid-template-columns: minmax(0, 1fr); padding: 0 16px 16px; }

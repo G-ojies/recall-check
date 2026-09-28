@@ -1,0 +1,23 @@
+# Render Blueprint: one free web service. Create it from the dashboard (New > Blueprint) or the button in the README.
+services:
+  - type: web
+    name: recall-check
+    runtime: node
+    plan: free
+    region: virginia
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: SIM_SECRET
+        generateValue: true
+      - key: OAUTH_SECRET
+        generateValue: true
+      # Optional. Without Redis, lists and accounts are kept on the instance's disk and are lost on a redeploy.
+      - key: KV_REST_API_URL
+        sync: false
+      - key: KV_REST_API_TOKEN
+        sync: false

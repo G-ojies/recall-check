@@ -15,6 +15,25 @@
     try { localStorage.setItem('rc-household', household); } catch { /* keep it for this visit only */ }
   }
 
+  // A linked account (see link.html) replaces the browser's household. Its token is renewed when it is about to expire.
+  let link = null;
+  try { link = JSON.parse(localStorage.getItem('rc-link') || 'null'); } catch { /* not linked */ }
+  const saveLink = () => { try { link ? localStorage.setItem('rc-link', JSON.stringify(link)) : localStorage.removeItem('rc-link'); } catch { /* fine */ } };
+  async function token() {
+    if (!link) return undefined;
+    if (link.until - Date.now() > 60000) return link.access;
+    try {
+      const res = await fetch('oauth/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: link.refresh, client_id: 'recall-check-simulator' }) });
+      if (!res.ok) throw new Error('refused');
+      const t = await res.json();
+      link = { access: t.access_token, refresh: t.refresh_token, until: Date.now() + t.expires_in * 1000 };
+    } catch { link = null; }
+    saveLink(); account();
+    return link ? link.access : undefined;
+  }
+  const account = () => { $('account').textContent = link ? 'Account linked' : 'Link an account'; };
+  account();
+
   const bar = $('lightbar'), home = $('home'), talk = $('talk'), heard = $('heard'), said = $('said'), cards = $('cards');
   const form = $('ask'), input = $('text'), send = $('send'), mic = $('mic'), voice = $('voice');
   let busy = false;
@@ -95,8 +114,9 @@
     heard.textContent = text; said.textContent = 'One moment'; said.className = 'said thinking'; cards.replaceChildren();
     bar.dataset.state = 'thinking';
     try {
-      const res = await fetch('sim/turn', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ household, text }) });
+      const res = await fetch('sim/turn', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ household, text, token: await token() }) });
       const t = await res.json();
+      if (t.relink) { link = null; saveLink(); account(); }
       if (!res.ok) throw new Error(t.error || 'The simulator is not answering.');
       said.className = t.speech.length > 220 ? 'said long' : 'said'; said.textContent = t.speech;
       cards.replaceChildren(...t.cards.map(card));
