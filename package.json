@@ -14,7 +14,7 @@
     "sync": "tsx scripts/sync.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "build": "esbuild src/vercel.ts --bundle --platform=node --target=node20 --format=esm --loader:.gz=binary --outfile=dist/recall-check.mjs --log-level=warning --banner:js=\"import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\""
+    "build": "node scripts/build.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.1",

@@ -1,4 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "services": {
+    "recall-check": { "root": ".", "entrypoint": "index.js" }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": { "service": "recall-check" } }
+  ]
 }

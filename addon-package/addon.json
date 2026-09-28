@@ -15,14 +15,14 @@
           "Alexa, I drive a 2020 Honda Civic"
         ],
         "privacyAndCompliance": {
-          "privacyPolicyUrl": "https://example.com/recall-check/privacy",
-          "termsOfUseUrl": "https://example.com/recall-check/terms"
+          "privacyPolicyUrl": "https://recall-check-sage.vercel.app/privacy",
+          "termsOfUseUrl": "https://recall-check-sage.vercel.app/terms"
         }
       }
     }
   },
   "accountLinking": { "enabled": true },
   "integrations": [
-    { "type": "MCP", "config": { "endpoints": { "default": { "type": "HTTPS", "uri": "https://example.com/mcp" } } } }
+    { "type": "MCP", "config": { "endpoints": { "default": { "type": "HTTPS", "uri": "https://recall-check-sage.vercel.app/mcp" } } } }
   ]
 }

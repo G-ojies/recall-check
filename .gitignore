@@ -6,3 +6,4 @@ data/
 *.log
 dist/
 .vercel
+.env*

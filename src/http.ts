@@ -26,8 +26,10 @@ export interface AppOptions {
   mcpUrl: string;
   /** runs work that outlives the answer: a vehicle lookup finishing, a stale copy being renewed */
   afterAnswer?: (work: Promise<unknown>) => void;
-  /** a directory of files to serve, for a host that does not serve them itself */
+  /** a directory of files to serve */
   staticDir?: string;
+  /** or the files themselves, where there is no directory: path to content type and base64 body */
+  pages?: Record<string, { type: string; body: string }>;
   /** false where the file system cannot be written to */
   saveData?: boolean;
   /** the recall data itself (gzipped JSON), for a host where reading a file beside the code is not dependable */
@@ -134,6 +136,13 @@ export async function createApp(opts: AppOptions): Promise<App> {
     http.post('/sim/reset', async (req: Request, res: Response) => { const id = household(req.body?.household); if (id) await host.reset(id); res.json({ ok: true }); });
     http.get('/sim/info', (_req, res) => { res.json({ brain: host.brain, recalls: index.size, dataBuiltAt: snapshot?.builtAt ?? null, counts: snapshot?.counts ?? {} }); });
     if (opts.staticDir) http.use(express.static(opts.staticDir, { extensions: ['html'], maxAge: '5m' }));
+    const pages = opts.pages;
+    if (pages) http.get('*', (req: Request, res: Response, next) => {
+      const path = req.path === '/' ? '/index.html' : req.path;
+      const page = pages[path] ?? pages[`${path}.html`];
+      if (!page) { next(); return; }
+      res.set({ 'content-type': page.type, 'cache-control': 'public, max-age=300' }).send(Buffer.from(page.body, 'base64'));
+    });
   }
 
   // Stateless server: there is no stream to open and no session to end.

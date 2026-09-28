@@ -6,7 +6,9 @@ Recall Check is an Alexa+ add-on: a self-hosted MCP server (spec 2025-11-25, Str
 
 Built for the Alexa+ track of *Build, Ship, Shape: Amazon Developer Hackathon*. MIT licensed.
 
-**[Watch the three-minute demo](https://youtu.be/XiVuPyTEVis)**
+**[Try it live](https://recall-check-sage.vercel.app)** · **[Watch the three-minute demo](https://youtu.be/XiVuPyTEVis)**
+
+The MCP endpoint is `https://recall-check-sage.vercel.app/mcp`.
 
 ![The simulated Alexa+ device answering "Is anything I own recalled?" with recall cards, beside a panel showing the MCP tool call took 8 ms](docs/screens/simulator.png)
 
@@ -58,7 +60,7 @@ Vehicle recalls apply to "certain" vehicles of a make, model and year, so they a
 | Requirement (Amazon's documentation) | How Recall Check meets it |
 | --- | --- |
 | MCP spec 2025-11-25 over Streamable HTTP | `@modelcontextprotocol/sdk` 1.30, `POST /mcp`, stateless, JSON responses. Older protocol versions are negotiated. |
-| Round trip under 500 ms | Answers come from a local index, never from a government API on the answer path. Tool calls measure 3 to 15 ms locally. A vehicle lookup is given 250 ms; if the agency is slower, the item is saved, the user is told the check is running, and the result is stored in the background. |
+| Round trip under 500 ms | Answers come from a local index, never from a government API on the answer path. Tool calls measure 3 to 15 ms locally and 30 to 200 ms on the live demo once it is warm. A vehicle lookup is given 250 ms; if the agency is slower, the item is saved, the user is told the check is running, and the result is stored in the background. |
 | Voice responses under 30 seconds | Every answer is built to stay under about 75 words. A test enforces it. |
 | No web addresses, ids or JSON in what is spoken | Links and ids travel in `structuredContent` only. A test enforces it across every tool. |
 | Explicit confirmation before deletion | `remove_item` answers with a question until it is called with `confirmed: true`. Enforced on the server, not left to the model. |
@@ -94,6 +96,8 @@ It is a simulation of the assistant only. The add-on behind it is real. For ever
 The host understands utterances with built-in rules, so it runs with no API key. Set `LLM_API_KEY` and `LLM_MODEL` to have a language model choose the tools instead, through any OpenAI-compatible endpoint.
 
 ## Run it
+
+The live demo runs on Vercel as one serverless function (`npm run build`, then `index.js`), with lists and accounts in Redis. A request that starts a new instance takes one to two seconds, because the index is loaded first.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/G-ojies/recall-check)
 

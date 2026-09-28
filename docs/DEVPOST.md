@@ -8,7 +8,7 @@ Text for the submission form at https://amazonappdev2026.devpost.com/ (Alexa+ tr
 | Tagline | Tell Alexa what you own. Hear about it when any of it is recalled, and what to do. |
 | Track | Alexa+ |
 | Repository | https://github.com/G-ojies/recall-check |
-| Live demo | (the Render address, once deployed) |
+| Live demo | https://recall-check-sage.vercel.app |
 | Video | https://youtu.be/XiVuPyTEVis |
 | Built with | TypeScript, Node.js, Model Context Protocol (2025-11-25, Streamable HTTP), OAuth 2.1, Express, Zod, Redis, CPSC / NHTSA / openFDA public APIs |
 
@@ -35,7 +35,7 @@ It is careful about how sure it is. It never reports a match on the brand alone.
 A self-hosted MCP server in TypeScript, on the official MCP SDK, built to Amazon's published Alexa+ requirements:
 
 - **Seven tools**, each designed around one thing a person asks for. Every result carries a short paragraph written to be spoken and the same facts as data, with a card for a screen.
-- **Under 500 ms.** Government APIs take 1 to 25 seconds, so no answer waits for one. Answers come from a local index of about 7,000 recalls, refreshed every six hours. Tool calls measure 3 to 20 ms. A vehicle lookup is given 250 ms; if the agency is slower, the item is saved, the user is told the check is running, and the result is stored in the background.
+- **Under 500 ms.** Government APIs take 1 to 25 seconds, so no answer waits for one. Answers come from a local index of about 7,000 recalls, refreshed every six hours. Tool calls measure 3 to 20 ms on one machine, and 30 to 200 ms on the live demo, where each call crosses the network to the function and to the database. A vehicle lookup is given 250 ms; if the agency is slower, the item is saved, the user is told the check is running, and the result is stored in the background.
 - **Authentication, both tiers.** The server is its own OAuth 2.1 authorization server. The client credentials grant gives Alexa+ a service token that can list tools and search recalls. The authorization code grant with PKCE links a household to an account. Household tools answer 401 until an account is linked, which is what makes Alexa+ start linking.
 - **Rules enforced on the server, and by tests.** Removing an item needs an explicit yes. Nothing spoken carries a web address, an id or JSON. Every answer stays under about 75 words. 84 tests cover these, with no network and no keys needed.
 - **A simulated Alexa+ device.** The Alexa+ developer tools are limited to partners, so the repository includes its own host: a page styled as an Echo Show. The assistant is simulated. The add-on behind it is real: every answer is a live MCP call over HTTP, timed against the 500 ms limit.
