@@ -4,7 +4,7 @@
  */
 import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import type { Household } from './types.ts';
 
 export const emptyHousehold = (): Household => ({ items: [], handled: {}, seen: {}, vehicleRecalls: {} });
@@ -51,7 +51,8 @@ export class FileStore extends KeyedStore {
   }
   async write(key: string, value: string, ttlSeconds?: number) {
     await mkdir(this.dir, { recursive: true });
-    const tmp = `${this.path(key)}.${process.pid}.tmp`;
+    // two writes to one key can overlap (an answer, and a vehicle lookup finishing behind it), so each has its own file
+    const tmp = `${this.path(key)}.${process.pid}.${randomBytes(4).toString('hex')}.tmp`;
     await writeFile(tmp, JSON.stringify({ value, ...(ttlSeconds ? { until: Date.now() + ttlSeconds * 1000 } : {}) }));
     await rename(tmp, this.path(key)); // a crash mid-write leaves the old file intact
   }

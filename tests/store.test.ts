@@ -47,3 +47,14 @@ test('store: redis is used only when both its address and its token are set', ()
   assert.equal(storeFromEnv({ KV_REST_API_URL: 'https://redis.example', KV_REST_API_TOKEN: 't' }).kind, 'redis');
   assert.equal(storeFromEnv({ UPSTASH_REDIS_REST_URL: 'https://redis.example', UPSTASH_REDIS_REST_TOKEN: 't' }).kind, 'redis');
 });
+
+test('store: writes to one key that overlap all succeed, and one of them wins whole', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'rc-store-'));
+  try {
+    const s = new FileStore(dir);
+    await Promise.all(Array.from({ length: 25 }, (_, i) => s.write('k', JSON.stringify({ i, pad: 'x'.repeat(2000) }))));
+    const kept = JSON.parse((await s.read('k'))!) as { i: number; pad: string };
+    assert.ok(kept.i >= 0 && kept.i < 25);
+    assert.equal(kept.pad.length, 2000);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});

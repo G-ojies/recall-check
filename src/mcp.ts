@@ -93,15 +93,15 @@ export function buildServer(app: RecallCheck, userId: string, onIdle: (work: Pro
     title: 'Check my things for recalls',
     description: 'Check everything the user owns against current recalls. Use for "is anything I own recalled", "any new recalls", "check my stuff". New recalls since the last check are reported first.',
     inputSchema: {},
-    outputSchema: { speech, itemCount: z.number().optional(), newCount: z.number().optional(), matches: z.array(MatchOut).optional(), card: CardOut.optional() },
+    outputSchema: { speech, itemCount: z.number().optional(), newCount: z.number().optional(), matches: z.array(MatchOut).optional(), stillChecking: z.array(ItemOut).optional().describe('Vehicles whose recalls are still being fetched. Nothing is known about them yet.'), card: CardOut.optional() },
     annotations: { title: 'Check my things for recalls', readOnlyHint: true, openWorldHint: false },
   }, async () => {
     try {
       const r = await app.checkAll(userId);
       onIdle(app.refreshStale(userId, r.stale));
       const top = r.matches[0];
-      return say(sayCheck(r.matches, r.items.length, r.fresh), {
-        itemCount: r.items.length, newCount: r.fresh.size,
+      return say(sayCheck(r.matches, r.items.length, r.fresh, r.unchecked), {
+        itemCount: r.items.length, newCount: r.fresh.size, stillChecking: r.unchecked.map(item),
         // new ones first, so the screen shows what the voice is talking about
         matches: r.matches.map((m) => match(m, r.fresh.has(`${m.item.id}|${m.recall.id}`))).sort((a, b) => Number(b.isNew) - Number(a.isNew)),
         ...(top ? { card: card(top.recall.title, `${top.recall.hazard}\n\nWhat to do: ${top.recall.remedy}`, top.recall.url) } : {}),

@@ -122,7 +122,7 @@ Configuration is in [.env.example](.env.example).
 npm test
 ```
 
-79 tests, no network and no keys needed. They cover matching (including that a brand alone, or a brand mentioned only in a description, never produces a match), the three agency adapters against real record shapes, the household service, what is spoken, the tools called through a real MCP client, the simulator's understanding of utterances, storage, and authentication: codes that work once, PKCE, forged and expired tokens, refresh token rotation, and what a service token may not do.
+84 tests, no network and no keys needed. They cover matching (including that a brand alone, or a brand mentioned only in a description, never produces a match), the three agency adapters against real record shapes, the household service, what is spoken, the tools called through a real MCP client, the simulator's understanding of utterances, storage, and authentication: codes that work once, PKCE, forged and expired tokens, refresh token rotation, and what a service token may not do.
 
 ## How it is built
 
@@ -159,3 +159,5 @@ Recall data is refreshed every six hours. If one agency is down, its rows are ca
 - [docs/ALEXA-READINESS.md](docs/ALEXA-READINESS.md): what is done and what remains for a real Alexa+ listing.
 - [docs/FRICTION-LOG.md](docs/FRICTION-LOG.md): what was hard while building against Amazon's developer documentation.
 - [docs/PRODUCT-FEEDBACK.md](docs/PRODUCT-FEEDBACK.md): answers to the hackathon's product feedback questions.
+- [docs/DEVPOST.md](docs/DEVPOST.md): the submission text.
+- [docs/VIDEO.md](docs/VIDEO.md): what the demo video shows, minute by minute.

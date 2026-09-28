@@ -33,6 +33,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; } /* wins over the display set on .talk and .home */
 body { margin: 0; background: var(--page); color: var(--ink); line-height: 1.5; -webkit-font-smoothing: antialiased; }
 h1, h2, p { margin: 0; }
 button, input { font: inherit; color: inherit; }

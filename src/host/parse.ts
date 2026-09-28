@@ -16,7 +16,8 @@ export type Intent =
 const MAKES = ['land rover', 'mercedes benz', 'mercedes-benz', 'alfa romeo', 'aston martin', 'rolls royce', 'harley davidson', 'harley-davidson'];
 const FOOD = /\b(spinach|lettuce|salad|milk|cheese|yogurt|butter|peanut butter|chicken|beef|pork|turkey|sausage|ham|eggs?|bread|cereal|granola|cookies?|crackers|chips|snacks?|candy|chocolate|ice cream|juice|soda|water|coffee|tea|flour|rice|pasta|sauce|soup|fish|tuna|salmon|shrimp|fruit|berries|apples?|onions?|cucumbers?|carrots?|nuts|almonds|cashews|hummus|baby food|formula|frozen)\b/i;
 const MED = /\b(medicine|medication|pills?|tablets?|capsules?|caplets?|syrup|drops|ointment|inhaler|supplement|vitamins?|ibuprofen|acetaminophen|aspirin|antibiotic|insulin|prescription|mg)\b/i;
-const CAR = /\b(car|truck|suv|van|minivan|sedan|pickup|motorcycle|vehicle)\b/i;
+// a car seat is a product, not a car
+const CAR = /\b(car(?! seats?\b)|truck|suv|van|minivan|sedan|pickup|motorcycle|vehicle)\b/i;
 
 const tidy = (s: string) => s.replace(/\s+/g, ' ').replace(/^[\s,.]+|[\s,.!?]+$/g, '').trim();
 const strip = (s: string) => tidy(s.replace(/\b(please|thanks|thank you)\b/gi, '').replace(/\b(to|on|from|off) (my|the|our) (list|watch ?list)\b/gi, ''));

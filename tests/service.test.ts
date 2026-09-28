@@ -124,3 +124,28 @@ test('findItem: refuses to guess between two equally good candidates', async () 
   await service.addItem('u', { kind: 'product', brand: 'Acme', name: 'air fryer' });
   assert.equal(findItem(await service.listItems('u'), 'the Acme'), null);
 });
+
+test('vehicle: "no recalls" is never said about a vehicle that has not been checked', async () => {
+  const { service } = app({ vehicle: async () => { throw new Error('NHTSA 503'); } });
+  await service.addItem('u', { kind: 'product', brand: 'Acme', name: 'stroller' }); // has a recall
+  await service.markHandled('u', 'stroller');
+  await service.addItem('u', { kind: 'vehicle', brand: 'Honda', name: 'Civic', year: 2020 });
+  const check = await service.checkAll('u');
+  assert.deepEqual(check.unchecked.map((i) => i.name), ['Civic']);
+  const said = sayCheck(check.matches, check.items.length, check.fresh, check.unchecked);
+  assert.equal(said, 'I checked 1 item and found no recalls so far. I am still checking your 2020 Honda Civic. Ask me again in a moment.');
+  assert.doesNotMatch(said, /Good news/);
+
+  const only = app({ vehicle: async () => { throw new Error('NHTSA 503'); } });
+  await only.service.addItem('u', { kind: 'vehicle', brand: 'Honda', name: 'Civic', year: 2020 });
+  const alone = await only.service.checkAll('u');
+  assert.match(sayCheck(alone.matches, alone.items.length, alone.fresh, alone.unchecked), /^Nothing to report yet\. I am still checking your 2020 Honda Civic\./);
+});
+
+test('vehicle: once the agency has answered, an empty answer is a real "no recalls"', async () => {
+  const { service } = app({ vehicle: async () => [] });
+  await service.addItem('u', { kind: 'vehicle', brand: 'Honda', name: 'Civic', year: 2020 });
+  const check = await service.checkAll('u');
+  assert.equal(check.unchecked.length, 0);
+  assert.match(sayCheck(check.matches, check.items.length, check.fresh, check.unchecked), /^Good news\. I checked 1 item and found no recalls\.$/);
+});

@@ -89,13 +89,17 @@ export class RecallCheck {
     return item;
   }
 
-  /** Check everything. `fresh` holds "itemId|recallId" for matches the owner has not been told about before. */
-  async checkAll(userId: string): Promise<{ items: Item[]; matches: Match[]; fresh: Set<string>; stale: Item[] }> {
+  /**
+   * Check everything. `fresh` holds "itemId|recallId" for matches the owner has not been told about before.
+   * `unchecked` holds vehicles the agency has not answered for yet: nothing can be said about them either way.
+   */
+  async checkAll(userId: string): Promise<{ items: Item[]; matches: Match[]; fresh: Set<string>; stale: Item[]; unchecked: Item[] }> {
     const h = await this.store.get(userId);
-    const matches: Match[] = [], fresh = new Set<string>(), stale: Item[] = [];
+    const matches: Match[] = [], fresh = new Set<string>(), stale: Item[] = [], unchecked: Item[] = [];
     for (const item of h.items) {
       const cached = h.vehicleRecalls[item.id];
       if (item.kind === 'vehicle' && item.year && (!cached || this.now().getTime() - Date.parse(cached.fetchedAt) > VEHICLE_TTL_MS)) stale.push(item);
+      if (item.kind === 'vehicle' && !cached) unchecked.push(item);
       const seen = new Set(h.seen[item.id] ?? []);
       for (const m of this.matchesFor(h, item)) {
         matches.push(m);
@@ -104,7 +108,7 @@ export class RecallCheck {
       h.seen[item.id] = [...seen];
     }
     if (fresh.size) await this.store.put(userId, h);
-    return { items: h.items, matches: matches.sort(byImportance), fresh, stale };
+    return { items: h.items, matches: matches.sort(byImportance), fresh, stale, unchecked };
   }
 
   /** Re-fetch vehicle recalls that are a day old. Called after the answer has been sent. */

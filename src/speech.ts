@@ -70,9 +70,15 @@ function byItem(matches: Match[]): Match[][] {
   return [...groups.values()];
 }
 
-export function sayCheck(matches: Match[], itemCount: number, fresh: Set<string>): string {
+/** `unchecked` are vehicles still being looked up. "No recalls" is never said about something that was not checked. */
+export function sayCheck(matches: Match[], itemCount: number, fresh: Set<string>, unchecked: Item[] = []): string {
   if (!itemCount) return 'You have not told me about anything you own yet. Try: add my Graco stroller.';
-  if (!matches.length) return `Good news. I checked ${plural(itemCount, 'item')} and found no recalls.`;
+  const waiting = unchecked.length ? ` I am still checking your ${sayAnd(unchecked.slice(0, 2).map(sayItem))}${unchecked.length > 2 ? ' and others' : ''}. Ask me again in a moment.` : '';
+  if (!matches.length) {
+    const checked = itemCount - unchecked.length;
+    if (!waiting) return `Good news. I checked ${plural(itemCount, 'item')} and found no recalls.`;
+    return `${checked ? `I checked ${plural(checked, 'item')} and found no recalls so far.` : 'Nothing to report yet.'}${waiting}`;
+  }
   const news = matches.filter((m) => fresh.has(`${m.item.id}|${m.recall.id}`));
   const tell = news.length ? news : matches;
   const groups = byItem(tell);
@@ -88,6 +94,7 @@ export function sayCheck(matches: Match[], itemCount: number, fresh: Set<string>
   }
   const rest = groups.length - told;
   const more = rest > 0 ? ` ${rest === 1 ? 'One more item is' : `${rest} more items are`} affected. The full list is in the Alexa app.` : '';
+  if (waiting) return `${lead}${body}${more}${waiting}`;
   return `${lead}${body}${more} Ask me what to do about any of them.`.replace(/(in the Alexa app\.) Ask me what to do about any of them\.$/, '$1');
 }
 

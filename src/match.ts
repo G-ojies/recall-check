@@ -36,7 +36,13 @@ export class RecallIndex {
   /** True when some recall names all of these words as its maker. Used to tell where a brand ends in "Fisher Price rock n play". */
   knowsBrand(words: string): boolean {
     const t = tokens(words);
-    return t.length > 0 && this.candidates(t).some((r) => t.every((x) => r.brand.has(x)));
+    const makers = this.candidates(t).filter((r) => t.every((x) => r.brand.has(x))).length;
+    if (t.length < 2 || !makers) return makers > 0;
+    // A recall's maker text also carries its headline, so "Cosori air" is found there too. The last word belongs
+    // to the maker's name only if a large share of the recalls that use it are this maker's: "price" is, "air" is not.
+    const last = t[t.length - 1];
+    const uses = (this.byToken.get(last) ?? []).filter((i) => this.rows[i].brand.has(last)).length;
+    return makers / uses >= 0.4;
   }
 
   /** Recalls that mention every one of these tokens. */

@@ -63,3 +63,8 @@ test('understand: an item without a brand prompts for it, and the answer complet
 test('understand: anything else gets a useful nudge, never a tool call', () => {
   for (const u of ['what is the weather', 'play some jazz', '']) assert.ok('say' in hear(u), u);
 });
+
+test('parseThing: a car seat is a product', () => {
+  assert.deepEqual(parseThing('my Graco car seat', knows), { kind: 'product', brand: 'Graco', name: 'car seat', model: undefined, year: undefined });
+  assert.equal(parseThing('my Toyota car', () => false, undefined).kind, 'vehicle');
+});

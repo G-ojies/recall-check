@@ -62,3 +62,15 @@ test('search: finds by words, newest first on a tie', () => {
   assert.deepEqual(ix.search('Acme stroller').map((r) => r.id)[0], 'cpsc:2');
   assert.deepEqual(ix.search('nothing like this exists'), []);
 });
+
+test('knowsBrand: a word from the headline is not taken for part of the maker', () => {
+  const r = (id: string, brandText: string) => ({ ...RECALLS[0], id, brandText, productText: 'thing' });
+  const data = new RecallIndex([
+    r('a', 'Cosori Air Fryers Recalled by Atekcity'), r('b', 'Ninja Air Fryers Recalled'), r('c', 'Acme Air Purifiers Recalled'), r('d', 'Zenith Air Conditioners Recalled'),
+    r('e', 'Fisher-Price Recalls Sleepers'), r('f', 'Fisher-Price Recalls Soothers'), r('g', 'Best Price Mattress Recalls Beds'),
+  ]);
+  assert.equal(data.knowsBrand('Cosori'), true);
+  assert.equal(data.knowsBrand('Cosori air'), false, '"air" is used by many makers, so it starts the product name');
+  assert.equal(data.knowsBrand('Fisher Price'), true, '"price" is mostly Fisher-Price, so it ends the maker name');
+  assert.equal(data.knowsBrand('Nobody Known'), false);
+});
