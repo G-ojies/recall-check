@@ -6,6 +6,8 @@ Recall Check is an Alexa+ add-on: a self-hosted MCP server (spec 2025-11-25, Str
 
 Built for the Alexa+ track of *Build, Ship, Shape: Amazon Developer Hackathon*. MIT licensed.
 
+**[Watch the three-minute demo](https://youtu.be/XiVuPyTEVis)**
+
 ![The simulated Alexa+ device answering "Is anything I own recalled?" with recall cards, beside a panel showing the MCP tool call took 8 ms](docs/screens/simulator.png)
 
 ## The problem

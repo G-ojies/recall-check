@@ -1,6 +1,6 @@
 # Demo video
 
-Length 2:52, 1280 by 720. File: `recall-check-demo.mp4` (kept outside the repository). Upload it to YouTube as unlisted or public and put the address in the Devpost form.
+**https://youtu.be/XiVuPyTEVis** (unlisted, uploaded 28 September 2026). Length 2:52, 1280 by 720.
 
 The screen is a recording of the running app in a browser. The narration and Alexa's voice are synthesised speech; Alexa reads the exact text the add-on returned. Captions are burned in.
 

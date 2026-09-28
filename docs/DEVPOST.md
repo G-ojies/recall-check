@@ -9,7 +9,7 @@ Text for the submission form at https://amazonappdev2026.devpost.com/ (Alexa+ tr
 | Track | Alexa+ |
 | Repository | https://github.com/G-ojies/recall-check |
 | Live demo | (the Render address, once deployed) |
-| Video | (the YouTube address, once uploaded) |
+| Video | https://youtu.be/XiVuPyTEVis |
 | Built with | TypeScript, Node.js, Model Context Protocol (2025-11-25, Streamable HTTP), OAuth 2.1, Express, Zod, Redis, CPSC / NHTSA / openFDA public APIs |
 
 ## Inspiration
