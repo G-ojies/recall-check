@@ -1,6 +1,6 @@
 /** Recall Check as a process that listens on a port: a laptop, a container, a virtual machine. */
 import { fileURLToPath } from 'node:url';
-import { createApp } from './app.ts';
+import { createApp } from './http.ts';
 
 const PORT = Number(process.env.PORT ?? 8787);
 const REFRESH_MS = Number(process.env.RECALL_REFRESH_HOURS ?? 6) * 3600 * 1000;

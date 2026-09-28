@@ -9,12 +9,12 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
+    "dev": "tsx watch src/serve.ts",
+    "start": "tsx src/serve.ts",
     "sync": "tsx scripts/sync.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "build:vercel": "esbuild src/vercel.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/vercel.mjs --log-level=warning --banner:js=\"import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\""
+    "build": "esbuild src/vercel.ts --bundle --platform=node --target=node20 --format=esm --loader:.gz=binary --outfile=dist/recall-check.mjs --log-level=warning --banner:js=\"import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\""
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.1",

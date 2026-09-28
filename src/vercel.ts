@@ -1,12 +1,14 @@
 /**
  * Recall Check as a serverless function on Vercel. The pages in public/ are served by Vercel itself; this
- * answers /mcp, /oauth, /sim, /health and the metadata.
+ * answers /mcp, /oauth, /sim, /health and the metadata. `npm run build` bundles it into dist/, and index.js
+ * at the root hands it to the platform.
  *
- * There is no process to keep a timer in, so the recall data is the copy in seed/, which a scheduled GitHub
- * workflow renews (.github/workflows/data.yml). Lists and accounts need Redis: the file system here is temporary.
+ * There is no process to keep a timer in, so the recall data is the copy in seed/, built into the bundle, which
+ * a scheduled GitHub workflow renews (.github/workflows/data.yml). Lists and accounts need Redis: the file
+ * system here is temporary.
  */
-import type { IncomingMessage, ServerResponse } from 'node:http';
-import { createApp } from './app.ts';
+import seed from '../seed/recalls.json.gz';
+import { createApp } from './http.ts';
 
 const host = process.env.PUBLIC_URL ?? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL ?? 'localhost'}`;
 const PUBLIC_URL = host.replace(/\/+$/, '');
@@ -18,8 +20,4 @@ function afterAnswer(work: Promise<unknown>) {
   ctx?.get?.()?.waitUntil?.(work);
 }
 
-const ready = createApp({ publicUrl: PUBLIC_URL, mcpUrl: `${PUBLIC_URL}/mcp`, afterAnswer, saveData: false });
-
-export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  (await ready).http(req, res);
-}
+export const app = (await createApp({ publicUrl: PUBLIC_URL, mcpUrl: `${PUBLIC_URL}/mcp`, afterAnswer, saveData: false, seed })).http;

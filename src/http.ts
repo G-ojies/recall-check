@@ -2,13 +2,14 @@
  * The HTTP application. MCP over Streamable HTTP at POST /mcp, stateless: each request gets its own server
  * and transport, so any instance can answer any request and nothing is lost on a restart.
  *
- * Two things start it: src/server.ts, a process that listens on a port, and src/vercel.ts, a serverless function.
+ * Two things start it: src/serve.ts, a process that listens on a port, and src/vercel.ts, a serverless function.
  */
 import express, { type Express, type Request, type Response } from 'express';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createHash, randomBytes } from 'node:crypto';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gunzipSync } from 'node:zlib';
 import { RecallIndex } from './match.ts';
 import { RecallCheck } from './service.ts';
 import { storeFromEnv } from './store.ts';
@@ -29,6 +30,8 @@ export interface AppOptions {
   staticDir?: string;
   /** false where the file system cannot be written to */
   saveData?: boolean;
+  /** the recall data itself (gzipped JSON), for a host where reading a file beside the code is not dependable */
+  seed?: Uint8Array;
 }
 
 export interface App { http: Express; refresh: () => Promise<void>; dataAge: () => number; recalls: () => number; store: string }
@@ -47,6 +50,7 @@ export async function createApp(opts: AppOptions): Promise<App> {
 
   const index = new RecallIndex();
   let snapshot: Snapshot | null = opts.saveData === false ? null : await readSnapshot(DATA);
+  if (!snapshot && opts.seed) snapshot = JSON.parse(gunzipSync(opts.seed).toString('utf8')) as Snapshot;
   for (const seed of SEEDS) snapshot ??= await readSnapshot(seed);
   if (snapshot) index.load(snapshot.recalls);
   const store = storeFromEnv();

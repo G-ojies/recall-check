@@ -136,8 +136,8 @@ src/
   service.ts   what Recall Check can do, independent of MCP
   speech.ts    every sentence Alexa says
   mcp.ts       the seven tools
-  app.ts       HTTP: /mcp, /oauth, /health, and the simulator
-  server.ts    runs the app as a process on a port
+  http.ts      HTTP: /mcp, /oauth, /health, and the simulator
+  serve.ts     runs the app as a process on a port
   vercel.ts    runs the app as a serverless function
   auth.ts      who is calling
   oauth.ts     the authorization server: service tokens and account linking

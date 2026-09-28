@@ -1,17 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
-  "buildCommand": "npm run build:vercel",
-  "outputDirectory": "public",
-  "cleanUrls": true,
-  "functions": {
-    "api/index.js": { "includeFiles": "{dist,seed}/**", "maxDuration": 60, "memory": 1024 }
-  },
-  "rewrites": [
-    { "source": "/mcp", "destination": "/api" },
-    { "source": "/health", "destination": "/api" },
-    { "source": "/oauth/:path*", "destination": "/api" },
-    { "source": "/sim/:path*", "destination": "/api" },
-    { "source": "/.well-known/:path*", "destination": "/api" }
-  ]
+  "cleanUrls": true
 }
